@@ -1,0 +1,22 @@
+{
+    "name": "App Commande Produit",
+    "dockerComposeFile": [
+        "../docker-compose.yml"
+    ],
+    "service": "app",
+    "workspaceFolder": "/app/",
+    "customizations": {
+        // Configure properties specific to VS Code.
+        "vscode": {
+            // Add the IDs of extensions you want installed when the container is created.
+            "extensions": [
+                // DOCKER
+                "ms-azuretools.vscode-docker",
+                // GIT
+                "mhutchie.git-graph",
+                "donjayamanne.githistory",
+                "eamodio.gitlens"
+            ]
+        }
+    }
+}
