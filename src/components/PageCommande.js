@@ -25,48 +25,138 @@ function PageCommande() {
     const [data, setData] = useState(null);
     const [mode, setMode] = useState('online');
     const [show, setShow] = useState(false);
+    const [isSubmited, setSubmited] = useState(false);
+
+    async function setLocalStorage(datatostore) {
+
+        // make image show in offline not working
+
+        // if (mode === 'online') {
+        //     console.log("online")
+        //     let formatedDataToStore = { "products": [] };
+        //     let produitstostore = datatostore["products"]
+        //     try {
+        //         for (let produitToStore of produitstostore) {
+        //             let imageUrl = produitToStore["thumbnail"]
+        //             const response = await fetch(imageUrl);
+        //             if (!response.ok) {
+        //                 throw new Error(`Failed to fetch image. Status: ${response.status}`);
+        //             }
+        //             const blob = await response.blob();
+        //             imageUrl = URL.createObjectURL(blob);
+        //             // imageUrl = response
+        //             produitToStore["thumbnail"] = imageUrl;
+        //             formatedDataToStore["products"].push(produitToStore);
+        //         }
+        //     } catch (error) {
+        //         console.error('Error fetching image:', error.message);
+
+        //     }
+        //     localStorage.setItem("products", JSON.stringify(formatedDataToStore))
+        // } else {
+        //     localStorage.setItem("products", JSON.stringify(datatostore))
+        // }
+        localStorage.setItem("products", JSON.stringify(datatostore))
+
+
+    }
+    useEffect(() => {
+        if (isSubmited) {
+            // Ce code sera exécuté chaque fois que le formulaire est submité et que 'data' change
+            // console.log("__________set data ici____________________");
+            // for (let elt in data["products"]) {
+            //     console.log(elt.thumbnail);
+            // }
+            setLocalStorage(data);
+            // localStorage.setItem("products", JSON.stringify(data))
+        }
+    }, [data]);
 
     useEffect(() => {
         fetch('https://dummyjson.com/products')
             .then(response => response.json())
             .then(json => {
-                let dataOnline = json.products;
-                let dataLocal = JSON.parse(localStorage.getItem('products')).products;
-                let dataOnlineWithLocal = dataOnline.concat(dataLocal);
-                let dataToStore = json;
-                dataToStore.products = dataOnlineWithLocal
-                localStorage.setItem("products", JSON.stringify(dataToStore))
+                let dataOnline = json["products"];
+                let dataLocalProducts = null
+                if (localStorage.getItem('products')) {
+                    dataLocalProducts = "products" in JSON.parse(localStorage.getItem('products')) ? JSON.parse(localStorage.getItem('products'))["products"] : null;
+                }
+                console.log("______________________datalocal__________________________")
+                // console.log(dataLocalProducts)
+                if (dataLocalProducts) {
+                    for (let key in dataLocalProducts) {
+                        let value = dataLocalProducts[key];
+                        console.log(value);
+                    }
+                }
+                // console.log("______________________dataonline__________________________")
+                // console.log(dataOnline)
+                let dataOnlineWithLocal = dataOnline
+                if (dataLocalProducts) {
+                    // Merge arrays and remove duplicates based on the "id" property
+                    dataOnlineWithLocal = [...new Map([...dataOnline, ...dataLocalProducts].map(obj => [obj.id, obj])).values()];
+                }
+
+                let dataToStore = { "products": dataOnlineWithLocal };
+                setLocalStorage(dataToStore);
+                // localStorage.setItem("products", JSON.stringify(dataToStore))
+
                 setData(dataToStore);
+
+                // setData(dataToStore);
             })
             .catch(error => {
+                console.log(error)
                 setMode('offline')
                 let collection = localStorage.getItem('products');
                 setData(JSON.parse(collection))
             });
     }, []);
+
+    function findMaxId(arr) {
+        let maxId = 0;
+
+        arr.forEach(item => {
+            if (item.id > maxId) {
+                maxId = item.id;
+            }
+        });
+
+        return maxId;
+    }
+
     return (
         <div style={style.container}>
             <Button variant="light" onClick={() => setShow(true)}>Ajouter</Button>
             <Modal show={show} onHide={() => setShow(false)}>
-                <Form onSubmit={(event) => {
+                <Form onSubmit={async (event) => {
                     event.preventDefault();
                     setShow(false);
+                    let nextId = findMaxId(JSON.parse(localStorage.getItem('products'))["products"]) + 1
+                    let imageUrl = URL.createObjectURL(event.target[6].files[0])
+                    // const response = await fetch(imageUrl);
+                    // const blob = await response.blob();
+                    // imageUrl = URL.createObjectURL(blob);
 
-                    setData({
-                        "products": [...data["products"], {
-                            // "id": 1,
-                            "title": event.target[1].value,
-                            "description": event.target[3].value,
-                            "price": event.target[4].value,
-                            "discountPercentage": 12.96,
-                            "rating": event.target[5].value,
-                            "stock": 94,
-                            "brand": "Apple",
-                            "category": event.target[2].value,
-                            "thumbnail": "https://i.dummyjson.com/data/products/1/thumbnail.jpg", // event.target[6].value
-                        }]
-                    });
-                    localStorage.setItem("products", JSON.stringify(data))
+                    setData(
+                        {
+                            "products": [...data["products"], {
+                                "id": nextId,
+                                "title": event.target[1].value,
+                                "description": event.target[3].value,
+                                "price": event.target[4].value,
+                                "discountPercentage": 12.96,
+                                "rating": event.target[5].value,
+                                "stock": 94,
+                                "brand": "Apple",
+                                "category": event.target[2].value,
+                                "thumbnail": imageUrl,
+                                // "thumbnail": "https://i.dummyjson.com/data/products/1/thumbnail.jpg", // event.target[6].value
+
+                            }]
+                        }
+                    );
+                    setSubmited(true)
                 }}>
                     <Modal.Header closeButton>
                         <Modal.Title>Creation Produit</Modal.Title>
@@ -127,14 +217,15 @@ function PageCommande() {
             }
             {data ?
                 <div style={style.containerCard}>
-                    {data.products.map(product => (
-                        product.category === "smartphones" || product.category === "laptops" ?
+                    {data.products
+                        .filter(product => product.category === "smartphones" || product.category === "laptops")
+                        .sort((a, b) => b.id - a.id) // Tri par id décroissant
+                        .map(product => {
 
-                            <ProductCard ProduitElt={product} key={product.id} />
-                            :
-                            null
-                    )
-                    )}
+
+
+                            return (<ProductCard ProduitElt={product} key={product.id} />)
+                        })}
                 </div>
 
                 : 'Loading...'}
