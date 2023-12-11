@@ -17,6 +17,8 @@ this.addEventListener("install", (event) => {
 })
 
 this.addEventListener("fetch", (event) => {
+    //console.log("request heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeer");
+    // console.log(event.request);
     if (!navigator.onLine) {
         event.respondWith(
             caches.match(event.request).then((resp) => {

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
 import { FaStar } from 'react-icons/fa';
 import './../ProductStyle.css';
 import Button from 'react-bootstrap/Button';
@@ -50,6 +51,17 @@ const styles = {
     }
 }
 function ProductCard({ ProduitElt }) {
+    let dataCommandeLocal = { "commandes": [] }
+    if (localStorage.getItem('commandes')) {
+        dataCommandeLocal = JSON.parse(localStorage.getItem('commandes'));
+    }
+    const isProduitAlreadyOrdered = dataCommandeLocal["commandes"]
+        .some(commande => commande.id === ProduitElt.id);
+    const [buttonText, setButtonText] = useState(
+        isProduitAlreadyOrdered ? "Commandé" : "Commander"
+    );
+
+
     return (
         <div style={styles.Card} className="cardProduct">
             <div style={styles.badge}>
@@ -79,9 +91,29 @@ function ProductCard({ ProduitElt }) {
                 <div style={styles.price}>
                     $ {ProduitElt.price}
                 </div>
+
                 <div style={{ textAlign: "center" }}>
-                    <Button variant="danger" >
-                        Commander
+                    <Button disabled={isProduitAlreadyOrdered} variant={isProduitAlreadyOrdered ? "secondary" : "danger"} onClick={
+                        () => {
+                            if (localStorage.getItem('commandes')) {
+                                dataCommandeLocal = JSON.parse(localStorage.getItem('commandes'));
+                            }
+
+
+                            if (dataCommandeLocal["commandes"].length > 0) {
+
+                                localStorage.setItem("commandes", JSON.stringify({ "commandes": [...dataCommandeLocal["commandes"], ProduitElt] }))
+                            } else {
+                                localStorage.setItem("commandes", JSON.stringify({ "commandes": [ProduitElt] }))
+                            }
+                            if (!isProduitAlreadyOrdered) {
+                                // Met à jour le texte du bouton et enregistre dans le localStorage
+                                setButtonText("Commandé");
+                            }
+                        }
+                    }>
+                        {buttonText}
+
                     </Button>
                 </div>
             </div>

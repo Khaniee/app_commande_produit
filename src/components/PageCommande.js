@@ -81,16 +81,12 @@ function PageCommande() {
                 if (localStorage.getItem('products')) {
                     dataLocalProducts = "products" in JSON.parse(localStorage.getItem('products')) ? JSON.parse(localStorage.getItem('products'))["products"] : null;
                 }
-                console.log("______________________datalocal__________________________")
-                // console.log(dataLocalProducts)
                 if (dataLocalProducts) {
                     for (let key in dataLocalProducts) {
                         let value = dataLocalProducts[key];
-                        console.log(value);
                     }
                 }
-                // console.log("______________________dataonline__________________________")
-                // console.log(dataOnline)
+
                 let dataOnlineWithLocal = dataOnline
                 if (dataLocalProducts) {
                     // Merge arrays and remove duplicates based on the "id" property
@@ -134,10 +130,6 @@ function PageCommande() {
                     setShow(false);
                     let nextId = findMaxId(JSON.parse(localStorage.getItem('products'))["products"]) + 1
                     let imageUrl = URL.createObjectURL(event.target[6].files[0])
-                    // const response = await fetch(imageUrl);
-                    // const blob = await response.blob();
-                    // imageUrl = URL.createObjectURL(blob);
-
                     setData(
                         {
                             "products": [...data["products"], {
@@ -151,8 +143,6 @@ function PageCommande() {
                                 "brand": "Apple",
                                 "category": event.target[2].value,
                                 "thumbnail": imageUrl,
-                                // "thumbnail": "https://i.dummyjson.com/data/products/1/thumbnail.jpg", // event.target[6].value
-
                             }]
                         }
                     );
