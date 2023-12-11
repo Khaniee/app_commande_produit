@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from "../widgets/ProductCard";
-// import Table from 'react-bootstrap/Table';
-// import Image from 'react-bootstrap/Image';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
-// var jdb = require("db-json");
-// const fs = require('fs');
-
 const style = {
     container: {
         width: "100%",
-        // backgroundColor : "black",
         height: "100%",
         padding: "2rem",
     },
@@ -28,51 +22,18 @@ function PageCommande() {
     const [isSubmited, setSubmited] = useState(false);
 
     async function setLocalStorage(datatostore) {
-
-        // make image show in offline not working
-
-        // if (mode === 'online') {
-        //     console.log("online")
-        //     let formatedDataToStore = { "products": [] };
-        //     let produitstostore = datatostore["products"]
-        //     try {
-        //         for (let produitToStore of produitstostore) {
-        //             let imageUrl = produitToStore["thumbnail"]
-        //             const response = await fetch(imageUrl);
-        //             if (!response.ok) {
-        //                 throw new Error(`Failed to fetch image. Status: ${response.status}`);
-        //             }
-        //             const blob = await response.blob();
-        //             imageUrl = URL.createObjectURL(blob);
-        //             // imageUrl = response
-        //             produitToStore["thumbnail"] = imageUrl;
-        //             formatedDataToStore["products"].push(produitToStore);
-        //         }
-        //     } catch (error) {
-        //         console.error('Error fetching image:', error.message);
-
-        //     }
-        //     localStorage.setItem("products", JSON.stringify(formatedDataToStore))
-        // } else {
-        //     localStorage.setItem("products", JSON.stringify(datatostore))
-        // }
         localStorage.setItem("products", JSON.stringify(datatostore))
 
 
     }
     useEffect(() => {
         if (isSubmited) {
-            // Ce code sera exécuté chaque fois que le formulaire est submité et que 'data' change
-            // console.log("__________set data ici____________________");
-            // for (let elt in data["products"]) {
-            //     console.log(elt.thumbnail);
-            // }
             setLocalStorage(data);
-            // localStorage.setItem("products", JSON.stringify(data))
         }
     }, [data]);
 
     useEffect(() => {
+        console.log("CALLING USE EFFECT!");
         fetch('https://dummyjson.com/products')
             .then(response => response.json())
             .then(json => {
@@ -95,11 +56,7 @@ function PageCommande() {
 
                 let dataToStore = { "products": dataOnlineWithLocal };
                 setLocalStorage(dataToStore);
-                // localStorage.setItem("products", JSON.stringify(dataToStore))
-
                 setData(dataToStore);
-
-                // setData(dataToStore);
             })
             .catch(error => {
                 console.log(error)
@@ -130,6 +87,18 @@ function PageCommande() {
                     setShow(false);
                     let nextId = findMaxId(JSON.parse(localStorage.getItem('products'))["products"]) + 1
                     let imageUrl = URL.createObjectURL(event.target[6].files[0])
+
+                    const response = await fetch(imageUrl);
+                    const blob = await response.blob();
+
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const dataUrl = reader.result;
+                        imageUrl = dataUrl
+                    };
+                    reader.readAsDataURL(blob);
+                    await fetch(imageUrl);
+
                     setData(
                         {
                             "products": [...data["products"], {

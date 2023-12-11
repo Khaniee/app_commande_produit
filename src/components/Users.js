@@ -82,6 +82,17 @@ function Users() {
                         setShow(false);
                         let nextId = findMaxId(JSON.parse(localStorage.getItem('users'))["users"]) + 1
                         let imageUrl = URL.createObjectURL(event.target[6].files[0])
+
+                        const response = await fetch(imageUrl);
+                        const blob = await response.blob();
+
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            const dataUrl = reader.result;
+                            imageUrl = dataUrl
+                        };
+                        reader.readAsDataURL(blob);
+                        await fetch(imageUrl);
                         setData(
                             {
                                 "users": [...data["users"], {
@@ -92,8 +103,6 @@ function Users() {
                                     "email": event.target[3].value,
                                     "image": imageUrl,
                                     "password": event.target[5].value,
-                                    // "thumbnail": "https://i.dummyjson.com/data/products/1/thumbnail.jpg", // event.target[6].value
-
                                 }]
                             }
                         );
@@ -115,9 +124,6 @@ function Users() {
                         <Form.Group className="mb-3" controlId="formBasicEmail">
                             <Form.Label>Email address</Form.Label>
                             <Form.Control required type="email" placeholder="Enter email" />
-                            {/* <Form.Text className="text-muted">
-                        We'll never share your email with anyone else.
-                        </Form.Text> */}
                         </Form.Group>
 
                         <Form.Group className="mb-3" controlId="username">
@@ -162,11 +168,10 @@ function Users() {
                             <th>Prenom</th>
                             <th>Login</th>
                             <th>Email</th>
+                            <th>Password</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {/* {data.users.map(user => ( */}
-
                         {data.users
                             .sort((a, b) => b.id - a.id) // Tri par id décroissant
                             .map(user => {
@@ -180,6 +185,7 @@ function Users() {
                                     <td>{user.lastName}</td>
                                     <td>{user.username}</td>
                                     <td>{user.email}</td>
+                                    <td>{user.password}</td>
                                 </tr>)
                             }
                             )}
