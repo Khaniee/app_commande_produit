@@ -12,5 +12,4 @@ RUN npm install react-scripts -g
 COPY . ./
 
 # start app
-# CMD ["npm", "start"]
-CMD ["tail", "-f", "/dev/null"]
+CMD ["npm", "start"]
